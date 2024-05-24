@@ -1,41 +1,52 @@
 
-public class Game {
-    class Input(string keys)
-    {
-        public string Keys { get; } = keys;
-    }
+using util;
 
-    public readonly (int, int) WINDOW_DIM = (400, 400);
+public class Game 
+{
+    // To access singleton.
+    public static Game Current => _current;
+
+    public Window Window { get; } = new(new Rect(10, 10));
 
     private Input _prevInput = new("");
 
-    public Game() {}
+    // To store singeton.
+    private static Game _current;
 
-    public void Start() {
+    public Game() {
+        // Store singleton.
+        _current = this;
+    }
+
+    public void Start() 
+    {
         CallUpdate();
     }
 
-    private void CallUpdate() {
+    private void CallUpdate() 
+    {
         while (true) {
-            HandleInput();
-
             // Exit the game.
-            if (_prevInput.Keys.StartsWith('x')) {
+            if (_prevInput.Keys.StartsWith('x')) 
+            {
                 break;
             }
 
             Update();
+            HandleInput();
             Thread.Sleep(1000);
+            // Clear screen.
+            Console.Clear();
         }
     }
 
-    private void Update() {
-        Console.WriteLine("hi");
-
-        // TODO: Print out the game window.
+    private void Update() 
+    {
+        Window.Update();
     }
 
-    private void HandleInput() {
+    private void HandleInput() 
+    {
         Console.Write("Enter input: ");
         Console.Out.Flush();
         var input = Console.ReadLine();
