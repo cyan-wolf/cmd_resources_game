@@ -6,7 +6,7 @@ public class Game
     // To access singleton.
     public static Game Current => _current;
 
-    public Window Window { get; } = new(new Rect(10, 10));
+    public Window Window { get; } = new(new Rect(20, 20));
 
     private Input _prevInput = new("");
 
