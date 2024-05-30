@@ -18,6 +18,11 @@ public class Domain(ConsoleColor color)
         _tiles.Remove(tile);
     }
 
+    public int GetTileCount()
+    {
+        return _tiles.Count;
+    }
+
     public IEnumerable<Tile> GetTilesEnumerable()
     {
         return _tiles;

@@ -2,26 +2,20 @@ namespace util;
 
 public class Window
 {
-    private List<Domain> _domains = [
-        new Domain(ConsoleColor.Red),
-        new Domain(ConsoleColor.Blue),
-        new Domain(ConsoleColor.Green),
-        new Domain(ConsoleColor.Magenta),
-    ];
+    private readonly List<Domain> _domains = [];
 
-    private Random rnd = new();
+    private readonly Random rnd = new();
 
     public Window(Rect dimensions)
     {
         Dimensions = dimensions;
         World = new Tile[dimensions.X, dimensions.Y];
 
+        // Fill in the world with empty and border tiles.
         InitWorld();
 
-        SpawnTileOnWorld(new(3, 3), _domains[0]);
-        SpawnTileOnWorld(new(7, 7), _domains[1]);
-        SpawnTileOnWorld(new(15, 15), _domains[2]);
-        SpawnTileOnWorld(new(15, 3), _domains[3]);
+        // Initialize the domains in the world.
+        InitDomains();
     }
 
     public Rect Dimensions { get; }
@@ -32,6 +26,7 @@ public class Window
     {
         TryToSpreadDomains();
         Draw();
+        ShowScorePerDomain();
     }
 
     // Draws the tiles on screen based on the world state.
@@ -64,6 +59,52 @@ public class Window
                     World[x, y] = Tile.Empty(new(x, y));
                 }
             }
+        }
+    }
+
+    private void InitDomains()
+    {
+        // Register the domains.
+        _domains.Add(new Domain(ConsoleColor.Red));
+        _domains.Add(new Domain(ConsoleColor.Blue));
+        _domains.Add(new Domain(ConsoleColor.Green));
+        _domains.Add(new Domain(ConsoleColor.Magenta));
+
+        // Give each domain a starting tile.
+        SpawnTileOnWorld(new(3, 3), _domains[0]);
+        SpawnTileOnWorld(new(7, 7), _domains[1]);
+        SpawnTileOnWorld(new(15, 15), _domains[2]);
+        SpawnTileOnWorld(new(15, 3), _domains[3]);
+    }
+
+    // Shows how many tiles each domain has.
+    private void ShowScorePerDomain()
+    {
+        var originalFgColor = Console.ForegroundColor;
+
+        for (int i = 0; i < _domains.Count; i++)
+        {
+            Console.Write("Domain ");
+            Console.ForegroundColor = _domains[i].Color;
+            Console.Write($"#{i + 1} ");
+            Console.ForegroundColor = originalFgColor;
+
+            var plurality = (_domains[i].GetTileCount() != 1) ? "s" : "";
+            Console.Write($"has {_domains[i].GetTileCount()} tile{plurality}. Status: (");
+            
+            if (_domains[i].GetTileCount() > 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("Active");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("Defeated");
+            }
+
+            Console.ForegroundColor = originalFgColor;
+            Console.WriteLine(")");
         }
     }
 
