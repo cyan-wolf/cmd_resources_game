@@ -1,12 +1,14 @@
 namespace util;
 
-public class Tile(char repr, Point position, ConsoleColor color = ConsoleColor.White)
+public class Tile(char repr, Point position, Domain? domain = null)
 {
     public char Repr { get; } = repr;
 
     public Point Position { get; } = position;
 
-    public ConsoleColor Color { get; } = color;
+    public Domain? Domain { get; } = domain;
+
+    public ConsoleColor Color { get; private set; } = domain?.Color ?? ConsoleColor.White;
 
     public static Tile Empty(Point pos)
     {
@@ -14,7 +16,12 @@ public class Tile(char repr, Point position, ConsoleColor color = ConsoleColor.W
     }
 
     public static Tile Border(Point pos) {
-        return new Tile('#', pos, ConsoleColor.DarkGray);
+        var tile = new Tile('#', pos)
+        {
+            Color = ConsoleColor.DarkGray
+        };
+
+        return tile;
     }
 
     public void Show()

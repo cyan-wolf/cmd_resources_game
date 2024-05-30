@@ -86,10 +86,12 @@ public class Window
 
     private Tile SpawnTileOnWorld(Point pos, Domain domain)
     {
-        var tile = new Tile('@', pos, domain.Color);
+        var tile = new Tile('@', pos, domain);
 
-        // TODO: When a tile from a domain is replaced it needs to be removed 
-        // from the domain (i.e. call `domain.RemoveTile(tileToBeReplaced)`).
+        // When a tile from a domain is replaced it needs to be removed 
+        // from the domain's internal listing.
+        var tileToBeReplaced = World[pos.X, pos.Y];
+        tileToBeReplaced.Domain?.RemoveTile(tileToBeReplaced);
 
         // Add the tile to the world.
         World[pos.X, pos.Y] = tile;
