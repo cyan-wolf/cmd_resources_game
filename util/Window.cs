@@ -6,6 +6,8 @@ public class Window
 
     private readonly Random rnd = new();
 
+    private bool _isFirstFrame = true;
+
     public Window(Rect dimensions)
     {
         Dimensions = dimensions;
@@ -24,6 +26,15 @@ public class Window
 
     public void Update()
     {
+        // Prevents the domains from spreading in the first frame.
+        if (_isFirstFrame)
+        {
+            Draw();
+            ShowScorePerDomain();
+            _isFirstFrame = false;
+            return;
+        }
+
         TryToSpreadDomains();
         Draw();
         ShowScorePerDomain();
