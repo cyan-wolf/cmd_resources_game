@@ -80,7 +80,7 @@ public class Game
 
             Update();
             HandleInput("Enter input: ");
-            Thread.Sleep(1000);
+            Thread.Sleep(20);
             // Clear screen.
             Console.Clear();
         }
