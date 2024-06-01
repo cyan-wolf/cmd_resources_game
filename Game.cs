@@ -18,11 +18,13 @@ public class Game
         _current = this;
     }
 
+    // Called when a game is started.
     public void Start() 
     {
         CallUpdate();
     }
 
+    // Handles getting input and running the game loop.
     private void CallUpdate() 
     {
         while (true) {
@@ -40,11 +42,13 @@ public class Game
         }
     }
 
+    // Tells the window to update each frame.
     private void Update() 
     {
         Window.Update();
     }
 
+    // Gets input.
     private void HandleInput() 
     {
         Console.Write("Enter input: ");

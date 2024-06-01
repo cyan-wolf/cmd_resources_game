@@ -190,7 +190,15 @@ public class Window
                         {
                             // Queue this operation to do it after all the iterations.
                             // As to not invalidate the iterator.
-                            spreadAttemptQueue.Enqueue(() => SpawnTileOnWorld(nbrPos, domain));
+                            spreadAttemptQueue.Enqueue(() => {
+                                // Prevent the spawn of a tile at this position if it 
+                                // is part of the same domain.
+                                // NOTE: This check needs to be done in the lambda since a previous lambda 
+                                // might have changed the domain of this tile in the same frame.
+                                if (tile.Domain!.Equals(World[nbrPos.X, nbrPos.X].Domain)) { return; }
+
+                                SpawnTileOnWorld(nbrPos, domain);
+                            });
                             // Break out of the neighbor `foreach` loop since we 
                             // only want to spread out once per tile.
                             break;
