@@ -96,25 +96,20 @@ public class Window
         for (int i = 0; i < _domains.Count; i++)
         {
             Console.Write("Domain ");
-            Console.ForegroundColor = _domains[i].Color;
-            Console.Write($"#{i + 1} ");
-            Console.ForegroundColor = originalFgColor;
+            ColorUtils.ColorWrite($"#{i + 1} ", _domains[i].Color);
 
             var plurality = (_domains[i].GetTileCount() != 1) ? "s" : "";
             Console.Write($"has {_domains[i].GetTileCount()} tile{plurality}. Status: (");
             
             if (_domains[i].GetTileCount() > 0)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("Active");
+                ColorUtils.ColorWrite("Active", ConsoleColor.Green);
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("Defeated");
+                ColorUtils.ColorWrite("Defeated", ConsoleColor.Red);
             }
 
-            Console.ForegroundColor = originalFgColor;
             Console.WriteLine(")");
         }
     }
@@ -189,7 +184,7 @@ public class Window
                         if (!IsOnBorder(nbrPos) && IsInWorld(nbrPos))
                         {
                             // Queue this operation to do it after all the iterations.
-                            // As to not invalidate the iterator.
+                            // As to not to invalidate the iterator.
                             spreadAttemptQueue.Enqueue(() => {
                                 // Prevent the spawn of a tile at this position if it 
                                 // is part of the same domain.

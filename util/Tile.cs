@@ -26,11 +26,6 @@ public class Tile(char repr, Point position, Domain? domain = null)
 
     public void Show()
     {
-        var oldCmdColor = Console.ForegroundColor;
-
-        Console.ForegroundColor = Color;
-        Console.Write(Repr);
-
-        Console.ForegroundColor = oldCmdColor;
+        ColorUtils.ColorWrite(Repr.ToString(), Color);
     }
 }

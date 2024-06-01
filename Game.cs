@@ -21,7 +21,15 @@ public class Game
     // Called when a game is started.
     public void Start() 
     {
+        ShowStartMenu();
         CallUpdate();
+    }
+
+    private void ShowStartMenu()
+    {
+        HandleInput("Enter the value: ");
+
+        _prevInput = new("");   // clear the cached input value
     }
 
     // Handles getting input and running the game loop.
@@ -35,7 +43,7 @@ public class Game
             }
 
             Update();
-            HandleInput();
+            HandleInput("Enter input: ");
             Thread.Sleep(1000);
             // Clear screen.
             Console.Clear();
@@ -48,22 +56,15 @@ public class Game
         Window.Update();
     }
 
-    // Gets input.
-    private void HandleInput() 
+    // Gets input. Caches the previous input and returns it from this function.
+    private Input HandleInput(string prompt) 
     {
-        Console.Write("Enter input: ");
+        Console.Write(prompt);
         Console.Out.Flush();
         var input = Console.ReadLine();
 
         _prevInput = new(input!);
 
-        switch (input)
-        {
-            case "x":
-                break;
-            
-            default:
-                break;
-        }
+        return _prevInput;
     }
 }
