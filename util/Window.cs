@@ -8,7 +8,7 @@ public class Window
 
     private bool _isFirstFrame = true;
 
-    public Window(Rect dimensions)
+    public Window(Rect dimensions, List<Point> domainStartingPositions)
     {
         Dimensions = dimensions;
         World = new Tile[dimensions.X, dimensions.Y];
@@ -17,7 +17,7 @@ public class Window
         InitWorld();
 
         // Initialize the domains in the world.
-        InitDomains();
+        InitDomains(domainStartingPositions);
     }
 
     public Rect Dimensions { get; }
@@ -73,19 +73,40 @@ public class Window
         }
     }
 
-    private void InitDomains()
+    private void InitDomains(List<Point> domainStartingPositions)
     {
-        // Register the domains.
-        _domains.Add(new Domain(ConsoleColor.Red));
-        _domains.Add(new Domain(ConsoleColor.Blue));
-        _domains.Add(new Domain(ConsoleColor.Green));
-        _domains.Add(new Domain(ConsoleColor.Magenta));
+        // 13 colors
+        Queue<ConsoleColor> domainColors = new ([
+            // Main colors.
+            ConsoleColor.Red,
+            ConsoleColor.Blue,
+            ConsoleColor.Green,
+            ConsoleColor.Magenta,
+            ConsoleColor.Yellow,
+            ConsoleColor.Cyan,
+            ConsoleColor.DarkYellow,
+            ConsoleColor.Gray,
 
-        // Give each domain a starting tile.
-        SpawnTileOnWorld(new(3, 3), _domains[0]);
-        SpawnTileOnWorld(new(7, 7), _domains[1]);
-        SpawnTileOnWorld(new(15, 15), _domains[2]);
-        SpawnTileOnWorld(new(15, 3), _domains[3]);
+            // Colors that are harder to tell apart.
+            ConsoleColor.DarkRed,
+            ConsoleColor.DarkMagenta,
+            ConsoleColor.DarkCyan,
+            ConsoleColor.DarkGreen,
+            ConsoleColor.DarkBlue,
+        ]);
+        
+        // Initialize all the domains specified by the user.
+        foreach (var startPos in domainStartingPositions)
+        {
+            // Create a new domain with a preselected color.
+            var domain = new Domain(domainColors.Dequeue());
+
+            // Register the domain.
+            _domains.Add(domain);
+
+            // Give the domain a starting tile.
+            SpawnTileOnWorld(startPos, domain);
+        }
     }
 
     // Shows how many tiles each domain has.
@@ -168,8 +189,8 @@ public class Window
 
                     Point[] neighborPositions = [
                         new(tilePos.X + 1, tilePos.Y),
-                        new(tilePos.X - 1, tilePos.Y),
                         new(tilePos.X, tilePos.Y + 1),
+                        new(tilePos.X - 1, tilePos.Y),
                         new(tilePos.X, tilePos.Y - 1),
                     ];
 
@@ -183,15 +204,15 @@ public class Window
                         // Check whether the tile can spread to this position.
                         if (!IsOnBorder(nbrPos) && IsInWorld(nbrPos))
                         {
+                            // Prevent the spawn of a tile at this position if it 
+                            // is part of the same domain.
+                            if (tile.Domain!.Equals(World[nbrPos.X, nbrPos.X].Domain))
+                            {
+                                continue;
+                            }
                             // Queue this operation to do it after all the iterations.
                             // As to not to invalidate the iterator.
                             spreadAttemptQueue.Enqueue(() => {
-                                // Prevent the spawn of a tile at this position if it 
-                                // is part of the same domain.
-                                // NOTE: This check needs to be done in the lambda since a previous lambda 
-                                // might have changed the domain of this tile in the same frame.
-                                if (tile.Domain!.Equals(World[nbrPos.X, nbrPos.X].Domain)) { return; }
-
                                 SpawnTileOnWorld(nbrPos, domain);
                             });
                             // Break out of the neighbor `foreach` loop since we 
