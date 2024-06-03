@@ -104,8 +104,10 @@ public class Window
             // Register the domain.
             _domains.Add(domain);
 
-            // Give the domain a starting tile.
-            SpawnTileOnWorld(startPos, domain);
+            // Give the domain a starting tile (origin).
+            var originTile = SpawnTileOnWorld(startPos, domain);
+
+            domain.SetOriginTile(originTile);
         }
     }
 
@@ -122,13 +124,17 @@ public class Window
             var plurality = (_domains[i].GetTileCount() != 1) ? "s" : "";
             Console.Write($"has {_domains[i].GetTileCount()} tile{plurality}. Status: (");
             
-            if (_domains[i].GetTileCount() > 0)
+            if (_domains[i].GetTileCount() == 0)
             {
-                ColorUtils.ColorWrite("Active", ConsoleColor.Green);
+                ColorUtils.ColorWrite("Defeated", ConsoleColor.Red);
+            }
+            else if (! _domains[i].OriginIsActive())
+            {
+                ColorUtils.ColorWrite("No Origin", ConsoleColor.DarkYellow);
             }
             else
             {
-                ColorUtils.ColorWrite("Defeated", ConsoleColor.Red);
+                ColorUtils.ColorWrite("Active", ConsoleColor.Green);
             }
 
             Console.WriteLine(")");
@@ -152,7 +158,7 @@ public class Window
             || pos.Y < Dimensions.Y;
     }
 
-    private Tile SpawnTileOnWorld(Point pos, Domain domain)
+    private Tile SpawnTileOnWorld(Point pos, Domain domain, bool addAsOrigin = false)
     {
         var tile = new Tile('@', pos, domain);
 
@@ -174,7 +180,6 @@ public class Window
     private void TryToSpreadDomains()
     {
         Queue<Action> spreadAttemptQueue = [];
-        double chanceOfChoosingToSpreadTile = 0.5;
 
         // Iterate over all the domains in the world.
         foreach (var domain in _domains)
@@ -182,6 +187,8 @@ public class Window
             // Iterate over all the tiles part of a particular domain.
             foreach (var tile in domain.GetTilesEnumerable())
             {
+                double chanceOfChoosingToSpreadTile = domain.GetAttackPower();
+
                 // Randomly decide whether to choose this tile.
                 if (rnd.NextDouble() < chanceOfChoosingToSpreadTile)
                 {
@@ -204,16 +211,24 @@ public class Window
                         // Check whether the tile can spread to this position.
                         if (!IsOnBorder(nbrPos) && IsInWorld(nbrPos))
                         {
-                            // Prevent the spawn of a tile at this position if it 
-                            // is part of the same domain.
-                            if (tile.Domain!.Equals(World[nbrPos.X, nbrPos.X].Domain))
-                            {
-                                continue;
-                            }
                             // Queue this operation to do it after all the iterations.
                             // As to not to invalidate the iterator.
                             spreadAttemptQueue.Enqueue(() => {
-                                SpawnTileOnWorld(nbrPos, domain);
+                                // Prevent the spawn of a tile at this position if it 
+                                // is part of the same domain.
+                                if (tile.Domain!.Equals(World[nbrPos.X, nbrPos.Y].Domain))
+                                {
+                                    return;
+                                }
+
+                                var chanceToDefend = World[nbrPos.X, nbrPos.Y].Domain?.GetDefense() ?? 0;
+
+                                // Use the neighbor tile's defense to determine whether to spread.
+                                if (rnd.NextDouble() > chanceToDefend)
+                                {
+                                    //ColorUtils.ColorWriteLine("trying to spread", domain.Color);
+                                    SpawnTileOnWorld(nbrPos, domain);
+                                }
                             });
                             // Break out of the neighbor `foreach` loop since we 
                             // only want to spread out once per tile.

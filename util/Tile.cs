@@ -2,7 +2,7 @@ namespace util;
 
 public class Tile(char repr, Point position, Domain? domain = null)
 {
-    public char Repr { get; } = repr;
+    public char Repr { get; set; } = repr;
 
     public Point Position { get; } = position;
 
