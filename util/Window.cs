@@ -36,7 +36,7 @@ public class Window
             return;
         }
 
-        TryToSpreadDomains();
+        UpdateDomains();
         Draw();
         ShowScorePerDomain();
         CheckForAndDisplayWinner();
@@ -123,7 +123,7 @@ public class Window
 
             var plurality = (_domains[i].GetTileCount() != 1) ? "s" : "";
             Console.Write($"has {_domains[i].GetTileCount()} tile{plurality}. Status: (");
-            
+
             if (_domains[i].GetTileCount() == 0)
             {
                 ColorUtils.ColorWrite("Defeated", ConsoleColor.Red);
@@ -137,7 +137,10 @@ public class Window
                 ColorUtils.ColorWrite("Active", ConsoleColor.Green);
             }
 
-            Console.WriteLine(")");
+            Console.Write(") ");
+            Console.Write($"Population: {_domains[i].GetPopulation():n}");
+
+            Console.WriteLine("");
         }
     }
 
@@ -210,7 +213,7 @@ public class Window
         return tile;
     }
 
-    private void TryToSpreadDomains()
+    private void UpdateDomains()
     {
         Queue<Action> spreadAttemptQueue = [];
 
@@ -220,7 +223,11 @@ public class Window
             // Iterate over all the tiles part of a particular domain.
             foreach (var tile in domain.GetTilesEnumerable())
             {
-                double chanceOfChoosingToSpreadTile = domain.GetAttackPower();
+                // Update the tile.
+                tile.UpdateTileStatus(rnd);
+
+                // Process tile spread.
+                double chanceOfChoosingToSpreadTile = tile.GetAttackPower();
 
                 // Randomly decide whether to choose this tile.
                 if (rnd.NextDouble() < chanceOfChoosingToSpreadTile)
@@ -254,7 +261,7 @@ public class Window
                                     return;
                                 }
 
-                                var chanceToDefend = World[nbrPos.X, nbrPos.Y].Domain?.GetDefense() ?? 0;
+                                var chanceToDefend = World[nbrPos.X, nbrPos.Y].GetDefense();
 
                                 // Use the neighbor tile's defense to determine whether to spread.
                                 if (rnd.NextDouble() > chanceToDefend)

@@ -8,7 +8,11 @@ public class Domain(ConsoleColor color)
 
     public Tile Origin { get; private set; }
 
+    // All of the tiles that belong to this domain.
     private readonly HashSet<Tile> _tiles = [];
+
+    // Used for keeping track of what tiles are currently housing.
+    public HashSet<Tile> HousingTiles { get; } = [];
 
     private double _attackPower = 0.4;
 
@@ -22,11 +26,12 @@ public class Domain(ConsoleColor color)
     public void SetOriginTile(Tile tile)
     {
         Origin = tile;
-        tile.Repr = '$';
+        tile.MakeOrigin();
     }
 
     public void RemoveTile(Tile tile)
     {
+        tile.Destroy();
         _tiles.Remove(tile);
     }
 
@@ -64,8 +69,28 @@ public class Domain(ConsoleColor color)
         }
     }
 
+    // Used to approximately show how many housing tiles
+    // this domain has.
+    public double GetPopulation()
+    {
+        var rnd = new Random();
+
+        return (0.5 + HousingTiles.Count * (2 + 0.5*rnd.NextDouble())) * (1 + 0.3*rnd.NextDouble());
+    }
+
     public bool OriginIsActive()
     {
         return _tiles.Contains(Origin);
+    }
+
+    public bool ShouldIncreaseHousingTiles()
+    {
+        return HousingTiles.Count < GetPreferredHousingTileAmount();
+    }
+
+    // Returns the number of housing tiles that the domain would want to have.
+    private int GetPreferredHousingTileAmount()
+    {
+        return GetTileCount() / 20;
     }
 }
