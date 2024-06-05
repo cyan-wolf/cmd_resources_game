@@ -31,6 +31,7 @@ public class Window
         {
             Draw();
             ShowScorePerDomain();
+            CheckForAndDisplayWinner();
             _isFirstFrame = false;
             return;
         }
@@ -38,6 +39,7 @@ public class Window
         TryToSpreadDomains();
         Draw();
         ShowScorePerDomain();
+        CheckForAndDisplayWinner();
     }
 
     // Draws the tiles on screen based on the world state.
@@ -114,8 +116,6 @@ public class Window
     // Shows how many tiles each domain has.
     private void ShowScorePerDomain()
     {
-        var originalFgColor = Console.ForegroundColor;
-
         for (int i = 0; i < _domains.Count; i++)
         {
             Console.Write("Domain ");
@@ -141,6 +141,39 @@ public class Window
         }
     }
 
+    private void CheckForAndDisplayWinner()
+    {
+        // There cannot be a winner if there are no domains.
+        if (_domains.Count == 0)
+        {
+            return;
+        }
+
+        int lastSurvivingDomainIdx = -1;
+        int defeatedAmount = 0;
+
+        for (int i = 0; i < _domains.Count; i++)
+        {
+            if (_domains[i].GetTileCount() == 0)
+            {
+                defeatedAmount++;
+            }
+            else 
+            {
+                lastSurvivingDomainIdx = i;
+            }
+        }
+
+        if (defeatedAmount == _domains.Count - 1)
+        {
+            Domain winner = _domains[lastSurvivingDomainIdx];
+
+            Console.Write("Domain ");
+            ColorUtils.ColorWrite($"#{lastSurvivingDomainIdx + 1}", winner.Color);
+            Console.WriteLine(" is the winner.");
+        }
+    }
+
     // Determines whether the given position is on the border.
     private bool IsOnBorder(Point pos)
     {
@@ -158,7 +191,7 @@ public class Window
             || pos.Y < Dimensions.Y;
     }
 
-    private Tile SpawnTileOnWorld(Point pos, Domain domain, bool addAsOrigin = false)
+    private Tile SpawnTileOnWorld(Point pos, Domain domain)
     {
         var tile = new Tile('@', pos, domain);
 
