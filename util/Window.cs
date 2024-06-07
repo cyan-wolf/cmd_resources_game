@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace util;
 
 public class Window
@@ -45,15 +47,29 @@ public class Window
     // Draws the tiles on screen based on the world state.
     private void Draw()
     {
+        // String builder that stores the window content to be printed at the end of the draw method.
+        var windowContent = new StringBuilder(Dimensions.X * Dimensions.Y * 2);
+
         for (int x = 0; x < Dimensions.X; x++)
         {
             for (int y = 0; y < Dimensions.Y; y++)
             {
                 var tile = World[x, y];
-                tile.Show();
+
+                // Append the tile to the builder, using its string representation and color.
+                ColorUtils.AppendToStrBuilder(
+                    windowContent, 
+                    tile.Repr, 
+                    tile.Color,
+                    shouldResetColor: false
+                );
             }
-            Console.WriteLine();
+            // Seperate each row by a new line.
+            windowContent.Append('\n');
         }
+        
+        // Draw (print) the window content to the console.
+        Console.WriteLine(windowContent);
     }
 
     // Initializes the tiles in the game world.
