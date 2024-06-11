@@ -1,4 +1,4 @@
-using System.Threading.Channels;
+using System.Diagnostics;
 
 namespace util;
 
@@ -16,6 +16,8 @@ public class Tile(char repr, Point position, Domain? domain = null)
         ORIGIN = 3,
         // The housing tiles represented by '^'.
         HOUSING = 4,
+        // The tiles near the origin represented by '%'.
+        FORTIFICATION = 5,
     }
 
     public char Repr { get; set; } = repr;
@@ -56,13 +58,27 @@ public class Tile(char repr, Point position, Domain? domain = null)
     // Determines how likely this tile is to spread to neighboring tiles.
     public double GetAttackPower()
     {
-        return Domain?.GetAttackPower() ?? 0.0;
+        if (Type is TileType.FORTIFICATION)
+        {
+            return Math.Max(0.8, Domain!.GetAttackPower());
+        }
+        else 
+        {
+            return Domain?.GetAttackPower() ?? 0.0;
+        }
     }
 
     // Determines how resistant this tile is to being replaced.
     public double GetDefense()
     {
-        return Domain?.GetDefense() ?? 0.0;
+        if (Type is TileType.FORTIFICATION)
+        {
+            return Math.Max(0.9, Domain!.GetDefense());
+        }
+        else 
+        {
+            return Domain?.GetDefense() ?? 0.0;
+        }
     }
 
     public void Show()
@@ -82,16 +98,49 @@ public class Tile(char repr, Point position, Domain? domain = null)
     // Called every frame.
     public void UpdateTileStatus(Random rnd)
     {
-        if (Type is TileType.EMPTY or TileType.BORDER or TileType.ORIGIN)
-        {
-            return;
-        }
-        if (Type is TileType.NORMAL)
+        if (Type is TileType.NORMAL && Repr != '*')
         {
             // Change the representation to show that the tile has been around for at least a turn.
             Repr = '*';
+            return;
         }
 
+        if (Type is TileType.NORMAL)
+        {
+            var statusChanged = TryToFortify(rnd);
+            if (statusChanged) { return; }
+        }
+
+        if (Type is TileType.NORMAL or TileType.HOUSING)
+        {
+            var statusChanged = TryToChangeHousingStatus(rnd);
+            if (statusChanged) { return; }
+        }
+    }
+
+    // This method returns `null` if either:
+    // 1. This tile has no domain.
+    // 2. This tile's domain has lost its origin.
+    public double? GetDistanceToDomainOrigin()
+    {
+        if (Domain is null) 
+        {
+            return null;
+        }
+        else if (Domain.Origin is null)
+        {
+            return null;
+        }
+
+        var originPos = Domain.Origin.Position;
+        
+        // Taxicab distance.
+        return Math.Abs(Position.X - originPos.X) + Math.Abs(Position.Y - originPos.Y);
+    }
+
+    // This method is only called on `NORMAL` or `HOUSING` tiles.
+    private bool TryToChangeHousingStatus(Random rnd)
+    {
         const double CHANCE_TO_CHANGING_HOUSING_STATUS = 0.05;
 
         if (rnd.NextDouble() < CHANCE_TO_CHANGING_HOUSING_STATUS)
@@ -108,6 +157,41 @@ public class Tile(char repr, Point position, Domain? domain = null)
                 Repr = '*';
                 Domain!.HousingTiles.Remove(this);
             }
+
+            return true;
         }
+        return false;
+    }
+
+    // This method is only called on `NORMAL` tiles.
+    // Returns `true` if this tile managed to update.
+    private bool TryToFortify(Random rnd)
+    {
+        // Utility funciton used to calculate the tile's "promotion chance",
+        // based on its distance to the domain origin and the size (tile count) of the domain.
+        static double promotionChanceCalc(double d, double c)
+        {
+            return Math.Exp(-1.0 * (d / 2 + 100 / c));
+        }
+
+        const double CHANCE_TO_FORTIFY = 0.025;
+
+        if (rnd.NextDouble() < CHANCE_TO_FORTIFY)
+        {
+            var dist = GetDistanceToDomainOrigin() ?? throw new UnreachableException();
+            var count = Domain!.GetTileCount();
+
+            var promotionChance = promotionChanceCalc(dist, count);
+
+            if (rnd.NextDouble() < promotionChance)
+            {
+                Type = TileType.FORTIFICATION;
+                Repr = '%';
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }
