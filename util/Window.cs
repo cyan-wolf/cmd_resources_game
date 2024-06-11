@@ -225,6 +225,13 @@ public class Window
         // Add the tile to the domain.
         domain.AddTile(tile);
 
+        // If a domain without an origin happens to replace another domain's 
+        // origin, then the domain (that is spreading) gets a new origin.
+        if (!domain.OriginIsActive() && tileToBeReplaced.IsOrigin())
+        {
+            domain.SetOriginTile(tile);
+        }
+
         // Return the newly created tile.
         return tile;
     }

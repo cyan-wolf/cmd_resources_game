@@ -138,6 +138,11 @@ public class Tile(char repr, Point position, Domain? domain = null)
         return Math.Abs(Position.X - originPos.X) + Math.Abs(Position.Y - originPos.Y);
     }
 
+    public bool IsOrigin()
+    {
+        return Type is TileType.ORIGIN;
+    }
+
     // This method is only called on `NORMAL` or `HOUSING` tiles.
     private bool TryToChangeHousingStatus(Random rnd)
     {
