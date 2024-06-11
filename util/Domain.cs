@@ -75,7 +75,7 @@ public class Domain(ConsoleColor color)
     {
         var rnd = new Random();
 
-        return (0.5 + HousingTiles.Count * (2 + 0.5*rnd.NextDouble())) * (1 + 0.3*rnd.NextDouble());
+        return ((0.1 * GetTileCount()) + HousingTiles.Count * (2 + 0.5*rnd.NextDouble())) * (1 + 0.1*rnd.NextDouble());
     }
 
     public bool OriginIsActive()
