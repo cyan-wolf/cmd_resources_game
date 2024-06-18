@@ -10,13 +10,20 @@ public class Window
 
     private bool _isFirstFrame = true;
 
-    public Window(Rect dimensions, List<Point> domainStartingPositions)
+    public Window(Rect dimensions, List<Point> domainStartingPositions, char[,]? customWorldLayout = null)
     {
         Dimensions = dimensions;
         World = new Tile[dimensions.X, dimensions.Y];
-
-        // Fill in the world with empty and border tiles.
-        InitWorld();
+        
+        if (customWorldLayout is not null)
+        {
+            InitCustomWorld(customWorldLayout);
+        }
+        else
+        {
+            // Fill in the world with empty and border tiles.
+            InitDefaultWorld();
+        }
 
         // Initialize the domains in the world.
         InitDomains(domainStartingPositions);
@@ -72,8 +79,25 @@ public class Window
         Console.WriteLine(windowContent);
     }
 
-    // Initializes the tiles in the game world.
-    private void InitWorld()
+    private void InitCustomWorld(char[,] customWorldLayout)
+    {
+        for (int x = 0; x < Dimensions.X; x++)
+        {
+            for (int y = 0; y < Dimensions.Y; y++)
+            {
+                char symbol = customWorldLayout[x, y];
+
+                World[x, y] = symbol switch
+                {
+                    '#' => Tile.Border(new(x, y)),
+                    _ => Tile.Empty(new(x, y)),
+                };
+            }
+        }
+    }
+
+    // Initializes the tiles in the game world, if no custom map is provided.
+    private void InitDefaultWorld()
     {
         for (int x = 0; x < Dimensions.X; x++)
         {
