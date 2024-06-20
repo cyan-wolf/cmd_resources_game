@@ -7,7 +7,7 @@ namespace util;
 public static class ColorUtils
 {
     // Resets ANSI console format when printed.
-    private const string PRINT_RESET_CODE = "\u001b[0m";
+    public const string PRINT_RESET_CODE = "\u001b[0m";
 
     // Writes the given content in the given color.
     public static void ColorWrite(string content, ConsoleColor color)

@@ -75,8 +75,11 @@ public class Window
             windowContent.Append('\n');
         }
         
+        // Reset any color formating once all the content has been appended to the window.
+        windowContent.Append(ColorUtils.PRINT_RESET_CODE);
+
         // Draw (print) the window content to the console.
-        Console.WriteLine(windowContent);
+        Console.Write(windowContent);
     }
 
     private void InitCustomWorld(char[,] customWorldLayout)
