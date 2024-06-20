@@ -7,7 +7,7 @@ public class Game
     public static Game Current => _current;
 
     // Initialized after the game starts.
-    private Window? _window;
+    private Window? _window = null;
 
     private Input _prevInput = new("");
 
@@ -39,7 +39,32 @@ public class Game
 *           Setup             *
 *******************************");
 
-        while (true)
+        while (_window is null)
+        {
+            var strInput = HandleInput("Do you have a configuration file for automatically setting up the game? (Y/N) ").Keys;
+
+            switch (strInput)
+            {
+            case "Y":
+                // Custom setup from file
+                CustomFileWindowSetup();
+                break;
+
+            case "N":
+                // Manual setup
+                ManualWindowSetup();
+                break;
+
+            default:
+                ColorUtils.ColorWriteLine("Error: invalid response", ConsoleColor.Red);
+                continue;
+            }
+        }
+    }
+
+    private void ManualWindowSetup()
+    {
+        while (_window is null)
         {
             Console.WriteLine("1) What will be the width and height of your game window? (Enter the width and height seperated by a space).");
             var strInput = HandleInput("Enter the width and height: ").Keys;
@@ -122,8 +147,67 @@ public class Game
             _window = new Window(windowDim, domainStartingPositions);
 
             _prevInput = new("");   // clear the cached input value
+        }
+    }
 
-            break;  // break out of loop
+    private void CustomFileWindowSetup()
+    {
+        var path = HandleInput("Enter the absolute path of the configuration file: ").Keys;
+
+        // Ignores the label on the config file.
+        static string GetField(StreamReader reader) => reader.ReadLine()!.Split(":")[1];
+
+        try
+        {
+            using var sr = new StreamReader(path);
+            string? ln;
+
+            var dimensionsArray = GetField(sr)   // ignore the label
+                .Split(' ')                      // split the x and y coords
+                .Select(int.Parse)               // convert them to ints
+                .ToArray();                      // convert to array
+
+            var dimensions = new Rect(dimensionsArray[1], dimensionsArray[0]); // swap coords
+
+            var domainAmt = int.Parse(GetField(sr));
+
+            sr.ReadLine();  // skip line
+
+            var domainPositions = new List<Point>(domainAmt);
+
+            for (int i = 0; i < domainAmt; i++)
+            {
+                ln = sr.ReadLine();
+                var posArray = ln!.Split(' ').Select(int.Parse).ToArray();
+
+                var pos = new Point(posArray[1], posArray[0]);  // swap coords
+
+                domainPositions.Add(pos);
+            }
+
+            sr.ReadLine();  // skip line
+
+            char[,] customWorldLayout = new char[dimensions.X, dimensions.Y];
+
+            var row = 0;
+
+            // Read the custom map.
+            while ((ln = sr.ReadLine()) != null)
+            {
+                // TODO: this isn't working
+                for (var col = 0; col < dimensions.X; col++)
+                {
+                    customWorldLayout[col, row] = ln[col];
+                }
+                row++;
+            }
+
+            _window = new Window(dimensions, domainPositions, customWorldLayout);
+            _prevInput = new Input("");
+        }
+        catch (Exception e)
+        {
+            ColorUtils.ColorWriteLine(e.Message, ConsoleColor.Red);
         }
     }
 
