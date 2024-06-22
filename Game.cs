@@ -45,12 +45,12 @@ public class Game
 
             switch (strInput)
             {
-            case "Y":
+            case "Y" or "y":
                 // Custom setup from file
                 CustomFileWindowSetup();
                 break;
 
-            case "N":
+            case "N" or "n":
                 // Manual setup
                 ManualWindowSetup();
                 break;
