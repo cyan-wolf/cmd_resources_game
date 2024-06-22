@@ -7,7 +7,7 @@ public class Game
     public static Game Current => _current;
 
     // Initialized after the game starts.
-    private Window? _window = null;
+    public Window? Window { get; private set; } = null;
 
     private Input _prevInput = new("");
 
@@ -39,7 +39,7 @@ public class Game
 *           Setup             *
 *******************************");
 
-        while (_window is null)
+        while (Window is null)
         {
             var strInput = HandleInput("Do you have a configuration file for automatically setting up the game? (Y/N) ").Keys;
 
@@ -64,7 +64,7 @@ public class Game
 
     private void ManualWindowSetup()
     {
-        while (_window is null)
+        while (Window is null)
         {
             Console.WriteLine("1) What will be the width and height of your game window? (Enter the width and height seperated by a space).");
             var strInput = HandleInput("Enter the width and height: ").Keys;
@@ -144,7 +144,7 @@ public class Game
             }
 
             // Initialize window.
-            _window = new Window(windowDim, domainStartingPositions);
+            Window = new Window(windowDim, domainStartingPositions);
 
             _prevInput = new("");   // clear the cached input value
         }
@@ -201,7 +201,7 @@ public class Game
                 x++;
             }
 
-            _window = new Window(dimensions, domainPositions, customWorldLayout);
+            Window = new Window(dimensions, domainPositions, customWorldLayout);
             _prevInput = new Input("");
         }
         catch (Exception e)
@@ -231,7 +231,7 @@ public class Game
     // Tells the window to update each frame.
     private void Update() 
     {
-        _window!.Update();
+        Window!.Update();
     }
 
     // Gets input. Caches the previous input and returns it from this function.

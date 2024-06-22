@@ -18,6 +18,8 @@ public class Domain(ConsoleColor color)
 
     private double _defense = 0.7;
 
+    private bool _inCounterOffensive = false;
+
     public void AddTile(Tile tile)
     {
         _tiles.Add(tile);
@@ -47,7 +49,11 @@ public class Domain(ConsoleColor color)
 
     public double GetAttackPower()
     {
-        if (OriginIsActive())
+        if (IsInCounterOffensive())
+        {
+            return 1.0;
+        }
+        else if (OriginIsActive())
         {
             return _attackPower;
         }
@@ -59,7 +65,11 @@ public class Domain(ConsoleColor color)
 
     public double GetDefense()
     {
-        if (OriginIsActive())
+        if (IsInCounterOffensive())
+        {
+            return 0.95;
+        }
+        else if (OriginIsActive())
         {
             return _defense;
         }
@@ -86,6 +96,21 @@ public class Domain(ConsoleColor color)
     public bool ShouldIncreaseHousingTiles()
     {
         return HousingTiles.Count < GetPreferredHousingTileAmount();
+    }
+
+    public void StartCounterOffensive()
+    {
+        _inCounterOffensive = true;
+    }
+
+    public void EndCounterOffensive()
+    {
+        _inCounterOffensive = false;
+    }
+
+    public bool IsInCounterOffensive()
+    {
+        return _inCounterOffensive;
     }
 
     // Returns the number of housing tiles that the domain would want to have.

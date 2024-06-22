@@ -4,6 +4,12 @@ namespace util;
 
 public class Window
 {
+    public static Window Current => Game.Current.Window!;
+
+    public Rect Dimensions { get; }
+
+    public Tile[,] World { get; } 
+
     private readonly List<Domain> _domains = [];
 
     private readonly Random rnd = new();
@@ -29,9 +35,30 @@ public class Window
         InitDomains(domainStartingPositions);
     }
 
-    public Rect Dimensions { get; }
+    // Returns the active domains, ordered by tile count.
+    // The domain with the most tiles is the first element, and 
+    // the one with the least is the last element.
+    public List<Domain> GetActiveDomainLeaderboard()
+    {
+        // Copies the domain list.
+        var domainList = _domains
+            .OrderBy(d => d.GetTileCount())
+            .Reverse()
+            .Where(d => d.GetTileCount() > 0)
+            .ToList();
 
-    public Tile[,] World { get; } 
+        return domainList;
+    }
+
+    // Returns the domains that no longer have tiles.
+    public List<Domain> GetDefeatedDomains()
+    {
+        var domainList = _domains
+            .Where(d => d.GetTileCount() == 0)
+            .ToList();
+
+        return domainList;
+    }
 
     public void Update()
     {
@@ -45,7 +72,9 @@ public class Window
             return;
         }
 
-        UpdateDomains();
+        UpdateDomainTiles();
+        UpdateSpecialEvents();
+
         Draw();
         ShowScorePerDomain();
         CheckForAndDisplayWinner();
@@ -183,7 +212,12 @@ public class Window
             Console.Write(") ");
             Console.Write($"Population: {_domains[i].GetPopulation():n}");
 
-            Console.WriteLine("");
+            if (_domains[i].IsInCounterOffensive())
+            {
+                Console.Write(" (Counterattacking)");
+            }
+
+            Console.WriteLine();
         }
     }
 
@@ -263,7 +297,7 @@ public class Window
         return tile;
     }
 
-    private void UpdateDomains()
+    private void UpdateDomainTiles()
     {
         Queue<Action> spreadAttemptQueue = [];
 
@@ -334,6 +368,42 @@ public class Window
         {
             var spreadAttempt = spreadAttemptQueue.Dequeue();
             spreadAttempt();
+        }
+    }
+
+    // Causes or stops special events such as alliances, etc.
+    private void UpdateSpecialEvents()
+    {
+        if (rnd.NextDouble() < 0.12)
+        {
+            // Try to start a counter offensive on the worst performing domain.
+            if (rnd.NextDouble() < 0.025)
+            {   
+                // Do not include domains without origins.
+                // NOTE: This is an inefficient way to "modify" the leaderboard.
+                List<Domain> leaderboard = GetActiveDomainLeaderboard().Where(d => d.OriginIsActive()).ToList();
+
+                if (leaderboard.Count < 2) { return; }
+
+                Domain weakestDomain = leaderboard[^1]!; // last element of the leaderboard
+
+                weakestDomain.StartCounterOffensive();
+            }
+        }
+        // Try to clear any special effects.
+        else
+        {
+            foreach (var domain in _domains)
+            {
+                // Try to end counter offensive.
+                if (rnd.NextDouble() < 0.0125)
+                {
+                    if (domain.IsInCounterOffensive())
+                    {
+                        domain.EndCounterOffensive();
+                    }
+                }
+            }
         }
     }
 }
