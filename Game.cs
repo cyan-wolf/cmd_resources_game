@@ -189,17 +189,16 @@ public class Game
 
             char[,] customWorldLayout = new char[dimensions.X, dimensions.Y];
 
-            var row = 0;
+            var x = 0;
 
             // Read the custom map.
             while ((ln = sr.ReadLine()) != null)
             {
-                // TODO: this isn't working
-                for (var col = 0; col < dimensions.X; col++)
+                for (var y = 0; y < dimensions.Y; y++)
                 {
-                    customWorldLayout[col, row] = ln[col];
+                    customWorldLayout[x, y] = ln[y];
                 }
-                row++;
+                x++;
             }
 
             _window = new Window(dimensions, domainPositions, customWorldLayout);
