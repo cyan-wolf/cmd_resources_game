@@ -73,7 +73,7 @@ public class Tile(char repr, Point position, Domain? domain = null)
     {
         if (Type is TileType.FORTIFICATION)
         {
-            return Math.Max(0.9, Domain!.GetDefense());
+            return Math.Max(0.9, Domain?.GetDefense() ?? 0.0);
         }
         else if (Type is TileType.BORDER)
         {
