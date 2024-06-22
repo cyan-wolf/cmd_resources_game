@@ -246,11 +246,4 @@ public class Game
 
         return _prevInput;
     }
-
-    private char[,] ReadCustomMap(Rect dimensions, string mapName)
-    {
-        // TODO: Figure out a way to load custom maps provided by the user.
-
-        return null;
-    }
 }

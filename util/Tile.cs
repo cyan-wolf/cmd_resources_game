@@ -75,6 +75,10 @@ public class Tile(char repr, Point position, Domain? domain = null)
         {
             return Math.Max(0.9, Domain!.GetDefense());
         }
+        else if (Type is TileType.BORDER)
+        {
+            return 1.0;
+        }
         else 
         {
             return Domain?.GetDefense() ?? 0.0;
