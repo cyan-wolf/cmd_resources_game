@@ -51,8 +51,7 @@ public class Tile(char repr, Point position, Domain? domain = null)
     // Called by this tile's domain.
     public void MakeOrigin()
     {
-        Repr = '$';
-        Type = TileType.ORIGIN;
+        ChangeType(TileType.ORIGIN);
     }
 
     // Determines how likely this tile is to spread to neighboring tiles.
@@ -109,15 +108,12 @@ public class Tile(char repr, Point position, Domain? domain = null)
             return;
         }
 
-        if (Type is TileType.NORMAL)
+        if (Type is TileType.NORMAL or TileType.HOUSING)
         {
             var statusChanged = TryToFortify(rnd);
             if (statusChanged) { return; }
-        }
 
-        if (Type is TileType.NORMAL or TileType.HOUSING)
-        {
-            var statusChanged = TryToChangeHousingStatus(rnd);
+            statusChanged = TryToChangeHousingStatus(rnd);
             if (statusChanged) { return; }
         }
     }
@@ -156,15 +152,11 @@ public class Tile(char repr, Point position, Domain? domain = null)
         {
             if (Domain!.ShouldIncreaseHousingTiles())
             {
-                Type = TileType.HOUSING;
-                Repr = '^';
-                Domain!.HousingTiles.Add(this);
+                ChangeType(TileType.HOUSING);
             }
             else if (Domain!.ShouldDecreaseHousingTiles())
             {
-                Type = TileType.NORMAL;
-                Repr = '*';
-                Domain!.HousingTiles.Remove(this);
+                ChangeType(TileType.NORMAL);
             }
 
             return true;
@@ -194,13 +186,50 @@ public class Tile(char repr, Point position, Domain? domain = null)
 
             if (rnd.NextDouble() < promotionChance)
             {
-                Type = TileType.FORTIFICATION;
-                Repr = '%';
+                ChangeType(TileType.FORTIFICATION);
             }
 
             return true;
         }
 
         return false;
+    }
+
+    private void ChangeType(TileType newType)
+    {
+        if (Type is TileType.HOUSING && newType is not TileType.HOUSING)
+        {
+            Domain!.HousingTiles.Remove(this);
+        }
+
+        switch (newType)
+        {
+        case TileType.EMPTY:
+            Repr = '.';
+            break;
+
+        case TileType.BORDER:
+            Repr = '#';
+            break;
+
+        case TileType.NORMAL:
+            Repr = '*';
+            break;
+
+        case TileType.ORIGIN:
+            Repr = '$';
+            break;
+
+        case TileType.HOUSING:
+            Repr = '^';
+            Domain!.HousingTiles.Add(this);
+            break;
+
+        case TileType.FORTIFICATION:
+            Repr = '%';
+            break;
+        }
+
+        Type = newType;
     }
 }
