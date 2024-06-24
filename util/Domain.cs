@@ -122,6 +122,6 @@ public class Domain(ConsoleColor color)
     // Returns the number of housing tiles that the domain would want to have.
     private int GetPreferredHousingTileAmount()
     {
-        return GetTileCount() / 20;
+        return GetTileCount() / 8;
     }
 }
