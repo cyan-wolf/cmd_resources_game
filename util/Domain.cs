@@ -98,6 +98,12 @@ public class Domain(ConsoleColor color)
         return HousingTiles.Count < GetPreferredHousingTileAmount();
     }
 
+    // Only decrease housing tiles if there are way more than the preferred amount.
+    public bool ShouldDecreaseHousingTiles()
+    {
+        return HousingTiles.Count > GetPreferredHousingTileAmount() * 1.5;
+    }
+
     public void StartCounterOffensive()
     {
         _inCounterOffensive = true;

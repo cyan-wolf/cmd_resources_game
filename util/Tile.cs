@@ -160,7 +160,7 @@ public class Tile(char repr, Point position, Domain? domain = null)
                 Repr = '^';
                 Domain!.HousingTiles.Add(this);
             }
-            else 
+            else if (Domain!.ShouldDecreaseHousingTiles())
             {
                 Type = TileType.NORMAL;
                 Repr = '*';
