@@ -378,16 +378,60 @@ public class Window
         {
             // Try to start a counter offensive on the worst performing domain.
             if (rnd.NextDouble() < 0.025)
-            {   
-                // Do not include domains without origins.
-                // NOTE: This is an inefficient way to "modify" the leaderboard.
-                List<Domain> leaderboard = GetActiveDomainLeaderboard().Where(d => d.OriginIsActive()).ToList();
+            {
+                List<Domain> leaderboard = GetActiveDomainLeaderboard();
 
                 if (leaderboard.Count < 2) { return; }
 
-                Domain weakestDomain = leaderboard[^1]!; // last element of the leaderboard
+                Domain strongestDomain = leaderboard[0];
+                Domain weakestDomain = leaderboard[^1]; // last element of the leaderboard
 
-                weakestDomain.StartCounterOffensive();
+                // Most of the time, the weakest domain is the one that will perform the counter offensive.
+                if (rnd.NextDouble() < 0.9)
+                {
+                    weakestDomain.StartCounterOffensive();
+                }
+                // Rarely, the strongest domain is the one that will perform it.
+                else
+                {
+                    strongestDomain.StartCounterOffensive();
+                }
+            }
+
+            // Try to revive a defeated domain.
+            else if (rnd.NextDouble() < 0.010)
+            {
+                List<Domain> defeatedDomains = GetDefeatedDomains();
+                List<Domain> leaderboard = GetActiveDomainLeaderboard();
+
+                if (defeatedDomains.Count == 0 || leaderboard.Count == 0) 
+                {
+                    return;
+                }
+
+                // Pick a random defeated domain.
+                var domainToRevive = defeatedDomains[rnd.Next(defeatedDomains.Count)];
+
+                var strongestDomain = leaderboard[0];
+                // This is slow.
+                List<Tile> strongestDomainTiles = strongestDomain.GetTilesEnumerable().ToList();
+
+                Tile tileToBeReplaced = strongestDomainTiles[rnd.Next(strongestDomainTiles.Count)];
+
+                // Revive the domain.
+                var newTile = SpawnTileOnWorld(tileToBeReplaced.Position, domainToRevive);
+
+                // Make the domain start out in counter offensive mode.
+                domainToRevive.StartCounterOffensive();
+
+                // The revived domain has a chance to have a new origin (or not).
+                // We check if the tile to be replaced is an origin, since there is another mechanic that 
+                // automatically makes the spreading tile an origin if it spreads over another domain's origin if 
+                // its own domain lacks one.
+                if (! tileToBeReplaced.IsOrigin() && rnd.NextDouble() < 0.5)
+                {
+                    domainToRevive.SetOriginTile(newTile);
+                }
             }
         }
         // Try to clear any special effects.
@@ -396,7 +440,7 @@ public class Window
             foreach (var domain in _domains)
             {
                 // Try to end counter offensive.
-                if (rnd.NextDouble() < 0.0125)
+                if (rnd.NextDouble() < 0.025)
                 {
                     if (domain.IsInCounterOffensive())
                     {
