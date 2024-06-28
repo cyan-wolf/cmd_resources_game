@@ -222,7 +222,7 @@ public class Game
 
             Update();
             HandleInput("Enter input: ");
-            Thread.Sleep(20);
+            Thread.Sleep(5);
             // Clear screen.
             Console.Clear();
         }
