@@ -399,7 +399,7 @@ public class Window
             }
 
             // Try to revive a defeated domain.
-            else if (rnd.NextDouble() < 0.010)
+            else if (rnd.NextDouble() < 0.08)
             {
                 List<Domain> defeatedDomains = GetDefeatedDomains();
                 List<Domain> leaderboard = GetActiveDomainLeaderboard();
